@@ -22,7 +22,8 @@ var enableCORS = function(req, res, next) {
 };
 
 app.use(enableCORS);
-
+app.use(express.static(__dirname + '/../client/'));
+console.log(__dirname + '/../client/')
 var storeMessage = function(name, data){
 	messages.push({name:name,text:data});
 	if(messages.length > 10){
@@ -39,9 +40,40 @@ app.get('/',function(request,response){
 });
 
 
-io.on('connection',function(client){
-	console.log(JSON.stringify(JSON.stringify(client)))
-});
+
+io.on('connection',onSocketConnection);
+
+// New socket connection
+function onSocketConnection(client) {
+	
+	console.log("New player has connected: "+client.id);
+
+	// Listen for client disconnected
+	client.on("disconnect", onClientDisconnect);
+
+	client.on("namespaceConnect", onNamespaceConnect)
+};
+
+function onNamespaceConnect(ns){
+	var nsp = io.of('/' + ns);
+	nsp.on('connection', function(nspSocket){
+		// Listen for new player message
+		nspSocket.on('messageOut', onMessageReceive)
+	})
+}
+
+function onMessageReceive(message){
+	this.broadcast.emit("messageIn",{text:message.text})
+}
+
+// Socket client has disconnected
+function onClientDisconnect() {
+	console.log("Client has disconnected: "+this.id);
+
+	// Broadcast removed player to connected socket clients
+	this.broadcast.emit("userLeft", {id: this.id});
+};
+
 
 
 server.listen(8000);

@@ -1,4 +1,4 @@
-var srcserver =  "src/";
+var srcserver =  "src/server/";
 var serverport = process.env.PORT || 8000;
 
 module.exports = function(grunt) {
