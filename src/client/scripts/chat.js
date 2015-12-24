@@ -288,7 +288,7 @@
       key: 'connect',
       value: function connect(host){
         if(io)
-          this.onConnect(host||"http://chatjs-server.herokuapp.com");
+          this.onConnect(host||"//chatjs-server.herokuapp.com");
         else
           alert('socket-io not available')  
       }
