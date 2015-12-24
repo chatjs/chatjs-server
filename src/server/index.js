@@ -3,6 +3,7 @@ var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server); 
 var path = require('path');
+var port = process.env.PORT || 8000;
 
 var messages = [];
 var users = [];
@@ -72,9 +73,9 @@ function onClientDisconnect() {
 
 
 
-server.listen(8000);
+server.listen(port);
 
-console.log('listening on 8000');
+console.log('listening on port');
 
 
 
