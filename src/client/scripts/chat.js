@@ -1,7 +1,7 @@
 (function() {
 'use strict';
 
-  var _createClass, Messenger, BuildHTML, init, createDOMstructure, addStyleSheets, socket, nsp, soc;
+  var _createClass, Messenger, BuildHTML, init, createDOMstructure, addStyleSheets, remotehost, socket, nsp, soc;
 
   _createClass = (function () { 
         function defineProperties(target, props) { 
@@ -72,11 +72,6 @@
 
     return BuildHTML;
   })();
-
-  function safeText(content, text) {
-//    var ele = content.querySelector('.message-wrapper:last-child').querySelector('.text-wrapper');
-  //  ele.innerHTML = text;
-  }
 
   function animateText(content) {
     setTimeout(function () {
@@ -152,7 +147,7 @@
         animateText(content);
 
         scrollBottom(inner);
-        soc.emit("messageOut", {text: message.text});
+        socket.emit("messageOut", {text: message.text, nsp:"/"+window.location.hostname});
 
         return console.log('Sent: ' + message.text);
       };
@@ -162,26 +157,31 @@
       };
 
       this.onConnect = function(host){
-        console.log(host)
-        socket = io.connect(host);
-        socket.emit('namespaceConnect',window.location.hostname)
+        remotehost = host;
 
-        window.setTimeout(function(){
+        socket = io.connect(remotehost);
+        socket.emit('namespaceConnect',window.location.hostname)
+        //Socket connection
+        socket.on("connect",onSocketConnect)
+        // Socket disconnection
+        socket.on("userLeft", onUserDisconnect);
+      }
+      //Socket Connected
+      function onSocketConnect(){
+        setTimeout(function(){
           // Overiding default with custom namespace
-          soc = io.connect(host+"/"+window.location.hostname);
+          soc = io.connect(remotehost+"/"+window.location.hostname);
           // New player message received
           soc.on("messageIn", onMessageIn);
-          // Socket disconnection
-          soc.on("userLeft", onUserDisconnect);
-        },1500)
+        },1000)
       }
-
       // Socket disconnected
       function onUserDisconnect(user) {
         chat_messenger.self.notify("Anonymous has left")
       };
       // On incoming Message
       function onMessageIn(message) {
+        if(message.source!=socket.id)
         chat_messenger.self.recieve(message.text)
       };
 
@@ -288,7 +288,7 @@
       key: 'connect',
       value: function connect(host){
         if(io)
-          this.onConnect(host||"http://localhost:8000");
+          this.onConnect(host||"http://chatjs-server.herokuapp.com");
         else
           alert('socket-io not available')  
       }
