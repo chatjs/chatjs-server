@@ -3,6 +3,7 @@ var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server); 
 var path = require('path');
+var url = require('url');
 var port = process.env.PORT || 8000;
 
 var messages = [];
@@ -67,8 +68,9 @@ function onMessageReceive(message){
 // Socket client has disconnected
 function onClientDisconnect() {
 	console.log("Client has disconnected: "+this.id);
+	var nsp = url.parse(this.handshake.headers.origin).hostname;
 	// Broadcast removed player to connected socket clients
-	this.broadcast.emit("userLeft", {id: this.id});
+	io.of(nsp).emit("userLeft",{id: this.id});
 };
 
 
