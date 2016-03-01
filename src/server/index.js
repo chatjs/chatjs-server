@@ -62,7 +62,8 @@ function onNamespaceConnect(ns){
 
 function onMessageReceive(message){
     var nsp = message.nsp;
-    io.of(nsp).emit("messageIn",{text:message.text,source:this.id});
+    var id = this.id.replace('/#','');
+    io.of(nsp).emit("messageIn",{text:message.text,source:id});
 }
 
 // Socket client has disconnected
